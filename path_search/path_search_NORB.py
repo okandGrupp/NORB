@@ -9,9 +9,9 @@ import sys
 from typing import List, Dict, Any
 
 from NORB.build_NORB import id_dict_paths
-from utils.bron_network_utils import load_graph_nodes
+from utils.norb_network_utils import load_graph_nodes
 
-NORB_PATH = "NORB/original_id_to_bron_id"
+NORB_PATH = "NORB/original_id_to_norb_id"
 out_order = {"tactic": "technique", "technique": "capec", "capec": "cwe",
              "cwe": "cve", "cve": "cpe"}
 in_order = {"technique": "tactic", "capec": "technique", "cwe": "capec",
@@ -107,9 +107,9 @@ def add_edges(node, next_node_type, edge_dict, graph, node_direction, cve_list):
 def make_dicts(data_type, NORB_folder_path):
     path = os.path.join(NORB_folder_path, NORB_PATH, id_dict_paths[data_type])
     with open(path) as f:
-        bron_dict = json.load(f)
+        norb_dict = json.load(f)
     threat_info_dict = make_threat_info_dict()
-    return bron_dict, threat_info_dict
+    return norb_dict, threat_info_dict
 
 
 def make_graph_edges_helper(data_type, name, edge_dict, graph, direction, cve_list):
@@ -132,15 +132,15 @@ def make_graph_edges_helper(data_type, name, edge_dict, graph, direction, cve_li
     return edge_dict, cve_list
 
 
-def make_graph_edges(data_key, data_type, bron_dict, edge_dict, graph, rows_list):
+def make_graph_edges(data_key, data_type, norb_dict, edge_dict, graph, rows_list):
     """
     data_key: refers to tactic, technique, etc (not a str)
     data_type (str): one of "tactic", "technique", "capec", "cwe", "cve", "cpe"
     """
-    if data_key in bron_dict:
+    if data_key in norb_dict:
         cve_list = []
-        bron_id = bron_dict[data_key]
-        name = data_type + "_" + bron_id
+        norb_id = norb_dict[data_key]
+        name = data_type + "_" + norb_id
         edge_dict[data_type].add(name)
 
         if data_type != "cpe":
@@ -157,33 +157,33 @@ def get_chain(data, graph, data_type, length, NORB_folder_path):
     rows_list = []
     if data_type == "tactic":
         for tactic in data.keys():
-            bron_dict, threat_info_dict = make_dicts(data_type, NORB_folder_path)
-            rows_list = make_graph_edges(tactic, data_type, bron_dict, threat_info_dict, graph, rows_list)
+            norb_dict, threat_info_dict = make_dicts(data_type, NORB_folder_path)
+            rows_list = make_graph_edges(tactic, data_type, norb_dict, threat_info_dict, graph, rows_list)
 
     if data_type == "technique":
         for technique in data.keys():
-            bron_dict, threat_info_dict = make_dicts(data_type, NORB_folder_path)
-            rows_list = make_graph_edges(technique, data_type, bron_dict, threat_info_dict, graph, rows_list)
+            norb_dict, threat_info_dict = make_dicts(data_type, NORB_folder_path)
+            rows_list = make_graph_edges(technique, data_type, norb_dict, threat_info_dict, graph, rows_list)
 
     if data_type == "capec":
         for capec in data.keys():
-            bron_dict, threat_info_dict = make_dicts(data_type, NORB_folder_path)
-            rows_list = make_graph_edges(capec, data_type, bron_dict, threat_info_dict, graph, rows_list)
+            norb_dict, threat_info_dict = make_dicts(data_type, NORB_folder_path)
+            rows_list = make_graph_edges(capec, data_type, norb_dict, threat_info_dict, graph, rows_list)
 
     elif data_type == "cwe":
         for cwe in data.keys():
-            bron_dict, threat_info_dict = make_dicts(data_type, NORB_folder_path)
-            rows_list = make_graph_edges(cwe, data_type, bron_dict, threat_info_dict, graph, rows_list)
+            norb_dict, threat_info_dict = make_dicts(data_type, NORB_folder_path)
+            rows_list = make_graph_edges(cwe, data_type, norb_dict, threat_info_dict, graph, rows_list)
 
     elif data_type == "cve":
         for cve in data.keys():
-            bron_dict, threat_info_dict = make_dicts(data_type, NORB_folder_path)
-            rows_list = make_graph_edges(cve, data_type, bron_dict, threat_info_dict, graph, rows_list)
+            norb_dict, threat_info_dict = make_dicts(data_type, NORB_folder_path)
+            rows_list = make_graph_edges(cve, data_type, norb_dict, threat_info_dict, graph, rows_list)
 
     elif data_type == "cpe":
         for cpe in data.keys():
-            bron_dict, threat_info_dict = make_dicts(data_type, NORB_folder_path)
-            rows_list = make_graph_edges(cpe, data_type, bron_dict, threat_info_dict, graph, rows_list)
+            norb_dict, threat_info_dict = make_dicts(data_type, NORB_folder_path)
+            rows_list = make_graph_edges(cpe, data_type, norb_dict, threat_info_dict, graph, rows_list)
 
     if length:
         for i in range(len(rows_list)):

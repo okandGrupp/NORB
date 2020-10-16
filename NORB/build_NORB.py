@@ -7,7 +7,7 @@ import sys
 from typing import List, Dict, Any
 
 UNIQUE_ID = 0
-NORB_PATH = "NORB/original_id_to_bron_id"
+NORB_PATH = "NORB/original_id_to_norb_id"
 name_map_paths = {"tactic_map": "technique_tactic_map.json",
                   "technique_names": "technique_name_map.json",
                   "attack_map": "capec_technique_map.json",
@@ -16,12 +16,12 @@ name_map_paths = {"tactic_map": "technique_tactic_map.json",
                   "cwe_names": "cwe_names.json",
                   "cve_map": "cve_map_cpe_cwe_score.json",
                   "cve_map_2015_2020": "cve_map_cpe_cwe_score_2015_2020.json"}
-id_dict_paths = {"tactic": "tactic_name_to_bron_id.json",
-                 "technique": "technique_id_to_bron_id.json",
-                 "capec": "capec_id_to_bron_id.json",
-                 "cwe": "cwe_id_to_bron_id.json",
-                 "cve": "cve_id_bron_id.json",
-                 "cpe": "cpe_id_bron_id.json"}
+id_dict_paths = {"tactic": "tactic_name_to_norb_id.json",
+                 "technique": "technique_id_to_norb_id.json",
+                 "capec": "capec_id_to_norb_id.json",
+                 "cwe": "cwe_id_to_norb_id.json",
+                 "cve": "cve_id_norb_id.json",
+                 "cpe": "cpe_id_norb_id.json"}
 
 def build_graph(save_path, input_data_folder, recent_cves=False):
     main_graph = nx.DiGraph()
@@ -71,8 +71,8 @@ def load_json(data_file, input_data_folder):
 
 def write_json(data_type_ids, save_path):
     """
-    data_type_ids (dict): maps string of data type to dict of data type id to bron id,
-            e.g. {"technique": technique_id_to_bron_id, "capec": capec_id_to_bron_id}
+    data_type_ids (dict): maps string of data type to dict of data type id to norb id,
+            e.g. {"technique": technique_id_to_norb_id, "capec": capec_id_to_norb_id}
     """
     os.makedirs(NORB_PATH, exist_ok=True)
     path_start = os.path.join(save_path, NORB_PATH)
@@ -86,15 +86,15 @@ def write_json(data_type_ids, save_path):
 def add_tactic_technique_edges(graph, input_data_folder, save_path):
     tactic_map = load_json("tactic_map", input_data_folder)
     technique_names = load_json("technique_names", input_data_folder)
-    technique_id_to_bron_id = {}
+    technique_id_to_norb_id = {}
     # there are no internal tactic IDs so we map to tactic names
-    tactic_name_to_bron_id = {}
+    tactic_name_to_norb_id = {}
     for technique in tactic_map:
         technique_original_id = technique
-        if technique_original_id not in technique_id_to_bron_id:
-            technique_bron_id = get_unique_id()
-            technique_node_name = "technique_" + technique_bron_id
-            technique_id_to_bron_id[technique_original_id] = technique_bron_id
+        if technique_original_id not in technique_id_to_norb_id:
+            technique_norb_id = get_unique_id()
+            technique_node_name = "technique_" + technique_norb_id
+            technique_id_to_norb_id[technique_original_id] = technique_norb_id
             graph.add_node(
                 technique_node_name,
                 original_id=technique_original_id,
@@ -103,16 +103,16 @@ def add_tactic_technique_edges(graph, input_data_folder, save_path):
                 metadata={},
             )
         else:
-            technique_bron_id = technique_id_to_bron_id[technique_original_id]
-            technique_node_name = "technique_" + technique_bron_id
+            technique_norb_id = technique_id_to_norb_id[technique_original_id]
+            technique_node_name = "technique_" + technique_norb_id
 
         tactics = tactic_map[technique]
         for tact in tactics:
             tactic_name = tact
 
-            if tactic_name not in tactic_name_to_bron_id:
-                tactic_bron_id = get_unique_id()
-                tactic_node_name = "tactic_" + tactic_bron_id
+            if tactic_name not in tactic_name_to_norb_id:
+                tactic_norb_id = get_unique_id()
+                tactic_node_name = "tactic_" + tactic_norb_id
                 graph.add_node(
                     tactic_node_name,
                     original_id="",
@@ -120,15 +120,15 @@ def add_tactic_technique_edges(graph, input_data_folder, save_path):
                     name=tact,
                     metadata={},
                 )
-                tactic_name_to_bron_id[tact] = tactic_bron_id
+                tactic_name_to_norb_id[tact] = tactic_norb_id
             else:
-                tactic_bron_id = tactic_name_to_bron_id[tactic_name]
-                tactic_node_name = "tactic_" + tactic_bron_id
+                tactic_norb_id = tactic_name_to_norb_id[tactic_name]
+                tactic_node_name = "tactic_" + tactic_norb_id
             if not graph.has_edge(tactic_node_name, technique_node_name):
                 graph.add_edge(tactic_node_name, technique_node_name)
             if not graph.has_edge(technique_node_name, tactic_node_name):
                 graph.add_edge(technique_node_name, tactic_node_name)
-    write_json({"technique": technique_id_to_bron_id, "tactic": tactic_name_to_bron_id}, save_path)
+    write_json({"technique": technique_id_to_norb_id, "tactic": tactic_name_to_norb_id}, save_path)
     return graph
 
 
@@ -136,20 +136,20 @@ def add_capec_technique_edges(graph, input_data_folder, save_path):
     attack_map = load_json("attack_map", input_data_folder)
     capec_names = load_json("capec_names", input_data_folder)
     technique_names = load_json("technique_names", input_data_folder)
-    path = os.path.join(save_path, NORB_PATH, "technique_id_to_bron_id.json")
+    path = os.path.join(save_path, NORB_PATH, "technique_id_to_norb_id.json")
     with open(path, "r") as f:
-        technique_id_to_bron_id = json.load(f)
-    capec_id_to_bron_id = {}
+        technique_id_to_norb_id = json.load(f)
+    capec_id_to_norb_id = {}
     for capec in attack_map:
         capec_original_id = capec
 
-        if capec_original_id not in capec_id_to_bron_id:
+        if capec_original_id not in capec_id_to_norb_id:
             if capec_original_id in capec_names:
                 capec_real_name = capec_names[capec_original_id]
             else:
                 capec_real_name = "Name not found"
-            capec_bron_id = get_unique_id()
-            capec_node_name = "capec_" + capec_bron_id
+            capec_norb_id = get_unique_id()
+            capec_node_name = "capec_" + capec_norb_id
             graph.add_node(
                 capec_node_name,
                 original_id=capec_original_id,
@@ -157,18 +157,18 @@ def add_capec_technique_edges(graph, input_data_folder, save_path):
                 name=capec_real_name,
                 metadata={},
             )
-            capec_id_to_bron_id[capec_original_id] = capec_bron_id
+            capec_id_to_norb_id[capec_original_id] = capec_norb_id
 
         else:
-            capec_bron_id = capec_id_to_bron_id[capec_original_id]
-            capec_node_name = "capec_" + capec_bron_id
+            capec_norb_id = capec_id_to_norb_id[capec_original_id]
+            capec_node_name = "capec_" + capec_norb_id
 
         techniques = attack_map[capec]
         for tech in techniques:
             technique_original_id = tech
-            if technique_original_id not in technique_id_to_bron_id:
-                technique_bron_id = get_unique_id()
-                technique_node_name = "technique_" + technique_bron_id
+            if technique_original_id not in technique_id_to_norb_id:
+                technique_norb_id = get_unique_id()
+                technique_node_name = "technique_" + technique_norb_id
                 if technique_original_id in technique_names:
                     technique_actual_name = technique_names[technique_original_id]
                 else:
@@ -180,16 +180,16 @@ def add_capec_technique_edges(graph, input_data_folder, save_path):
                     name=technique_actual_name,
                     metadata={},
                 )
-                technique_id_to_bron_id[technique_original_id] = technique_bron_id
+                technique_id_to_norb_id[technique_original_id] = technique_norb_id
             else:
-                technique_bron_id = technique_id_to_bron_id[technique_original_id]
-                technique_node_name = "technique_" + technique_bron_id
+                technique_norb_id = technique_id_to_norb_id[technique_original_id]
+                technique_node_name = "technique_" + technique_norb_id
 
             if not graph.has_edge(technique_node_name, capec_node_name):
                 graph.add_edge(technique_node_name, capec_node_name)
             if not graph.has_edge(capec_node_name, technique_node_name):
                 graph.add_edge(capec_node_name, technique_node_name)
-    write_json({"technique": technique_id_to_bron_id, "capec": capec_id_to_bron_id}, save_path)
+    write_json({"technique": technique_id_to_norb_id, "capec": capec_id_to_norb_id}, save_path)
     return graph
 
 
@@ -198,16 +198,16 @@ def add_capec_cwe_edges(graph, input_data_folder, save_path):
     capec_cwe = load_json("capec_cwe", input_data_folder)
     capec_names = load_json("capec_names", input_data_folder)
     cwe_names = load_json("cwe_names", input_data_folder)
-    path = os.path.join(save_path, NORB_PATH, "capec_id_to_bron_id.json")
+    path = os.path.join(save_path, NORB_PATH, "capec_id_to_norb_id.json")
     with open(path, "r") as json_file:
-        capec_id_to_bron_id = json.load(json_file)
-    cwe_id_to_bron_id = {}
+        capec_id_to_norb_id = json.load(json_file)
+    cwe_id_to_norb_id = {}
     capec_cwe_pairs = capec_cwe["capec_cwe"]
     for capec_node in capec_cwe_pairs:
         capec_original_id = capec_node
-        if capec_original_id not in capec_id_to_bron_id:
-            capec_bron_id = get_unique_id()
-            capec_node_name = "capec_" + capec_bron_id
+        if capec_original_id not in capec_id_to_norb_id:
+            capec_norb_id = get_unique_id()
+            capec_node_name = "capec_" + capec_norb_id
             if capec_original_id in capec_names:
                 capec_real_name = capec_names[capec_original_id]
             else:
@@ -219,17 +219,17 @@ def add_capec_cwe_edges(graph, input_data_folder, save_path):
                 name=capec_real_name,
                 metadata={},
             )
-            capec_id_to_bron_id[capec_original_id] = capec_bron_id
+            capec_id_to_norb_id[capec_original_id] = capec_norb_id
         else:
-            capec_bron_id = capec_id_to_bron_id[capec_original_id]
-            capec_node_name = "capec_" + capec_bron_id
+            capec_norb_id = capec_id_to_norb_id[capec_original_id]
+            capec_node_name = "capec_" + capec_norb_id
 
         cwes = capec_cwe_pairs[capec_node]["cwes"]
         for cwe in cwes:
             cwe_original_id = cwe
-            if cwe_original_id not in cwe_id_to_bron_id:
-                cwe_bron_id = get_unique_id()
-                cwe_node_name = "cwe_" + cwe_bron_id
+            if cwe_original_id not in cwe_id_to_norb_id:
+                cwe_norb_id = get_unique_id()
+                cwe_node_name = "cwe_" + cwe_norb_id
                 if cwe_original_id in cwe_names:
                     cwe_real_name = cwe_names[cwe_original_id]
                 else:
@@ -241,16 +241,16 @@ def add_capec_cwe_edges(graph, input_data_folder, save_path):
                     name=cwe_real_name,
                     metadata={},
                 )
-                cwe_id_to_bron_id[cwe_original_id] = cwe_bron_id
+                cwe_id_to_norb_id[cwe_original_id] = cwe_norb_id
 
             else:
-                cwe_bron_id = cwe_id_to_bron_id[cwe_original_id]
-                cwe_node_name = "cwe_" + cwe_bron_id
+                cwe_norb_id = cwe_id_to_norb_id[cwe_original_id]
+                cwe_node_name = "cwe_" + cwe_norb_id
             if not graph.has_edge(capec_node_name, cwe_node_name):
                 graph.add_edge(capec_node_name, cwe_node_name)
             if not graph.has_edge(cwe_node_name, capec_node_name):
                 graph.add_edge(cwe_node_name, capec_node_name)
-    write_json({"capec": capec_id_to_bron_id, "cwe": cwe_id_to_bron_id}, save_path)
+    write_json({"capec": capec_id_to_norb_id, "cwe": cwe_id_to_norb_id}, save_path)
     return graph
 
 
@@ -260,46 +260,46 @@ def add_cve_cpe_cwe(graph, recent_cves, input_data_folder, save_path):
     else:
         cve_map = load_json("cve_map", input_data_folder)
     cwe_names = load_json("cwe_names", input_data_folder)
-    path = os.path.join(save_path, NORB_PATH, "cwe_id_to_bron_id.json")
+    path = os.path.join(save_path, NORB_PATH, "cwe_id_to_norb_id.json")
     with open(path, "r") as f:
-        cwe_id_to_bron_id = json.load(f)
-    cve_id_to_bron_id = {}
-    cpe_id_to_bron_id = {}
+        cwe_id_to_norb_id = json.load(f)
+    cve_id_to_norb_id = {}
+    cpe_id_to_norb_id = {}
     for cve in cve_map:
         cve_original_id = cve
-        if cve_original_id not in cve_id_to_bron_id:
-            cve_bron_id = get_unique_id()
-            cve_node_name = "cve_" + cve_bron_id
+        if cve_original_id not in cve_id_to_norb_id:
+            cve_norb_id = get_unique_id()
+            cve_node_name = "cve_" + cve_norb_id
             graph.add_node(cve_node_name, datatype="cve", name="", original_id=cve_original_id,
                            metadata={"weight": cve_map[cve]["score"], "description": cve_map[cve]["description"]})
-            cve_id_to_bron_id[cve_original_id] = cve_bron_id
+            cve_id_to_norb_id[cve_original_id] = cve_norb_id
         else:
-            cve_bron_id = cve_id_to_bron_id[cve_original_id]
-            cve_node_name = "cve_" + cve_bron_id
+            cve_norb_id = cve_id_to_norb_id[cve_original_id]
+            cve_node_name = "cve_" + cve_norb_id
 
         for cpe in cve_map[cve]["cpes"]:
-            _add_cpe_node(cpe, graph, cpe_id_to_bron_id, cve_node_name)
+            _add_cpe_node(cpe, graph, cpe_id_to_norb_id, cve_node_name)
         for cwe in cve_map[cve]["cwes"]:
             cwe_original_id = cwe
             if not cwe.isalpha():
-                if cwe_original_id not in cwe_id_to_bron_id:
-                    cwe_bron_id = get_unique_id()
-                    cwe_node_name = "cwe_" + cwe_bron_id
+                if cwe_original_id not in cwe_id_to_norb_id:
+                    cwe_norb_id = get_unique_id()
+                    cwe_node_name = "cwe_" + cwe_norb_id
                     if cwe_original_id in cwe_names:
                         cwe_real_name = cwe_names[cwe_original_id]
                     else:
                         cwe_real_name = "Name not found"
                     graph.add_node(cwe_node_name, datatype="cwe", original_id=cwe_original_id, name=cwe_real_name, metadata={})
-                    cwe_id_to_bron_id[cwe_original_id] = cwe_bron_id
+                    cwe_id_to_norb_id[cwe_original_id] = cwe_norb_id
                 else:
-                    cwe_bron_id = cwe_id_to_bron_id[cwe_original_id]
-                    cwe_node_name = "cwe_" + cwe_bron_id
+                    cwe_norb_id = cwe_id_to_norb_id[cwe_original_id]
+                    cwe_node_name = "cwe_" + cwe_norb_id
 
                 if not graph.has_edge(cwe_node_name, cve_node_name):
                     graph.add_edge(cwe_node_name, cve_node_name)
                 if not graph.has_edge(cve_node_name, cwe_node_name):
                     graph.add_edge(cve_node_name, cwe_node_name)
-    write_json({"cwe": cwe_id_to_bron_id, "cve": cve_id_to_bron_id, "cpe": cpe_id_to_bron_id}, save_path)
+    write_json({"cwe": cwe_id_to_norb_id, "cve": cve_id_to_norb_id, "cpe": cpe_id_to_norb_id}, save_path)
     return graph
 
 
@@ -313,11 +313,11 @@ def parse_cpe(cpe_string):
     return dictionary
 
 
-def _add_cpe_node(cpe, graph, cpe_id_to_bron_id, end_point):
+def _add_cpe_node(cpe, graph, cpe_id_to_norb_id, end_point):
     cpe_original_id = cpe
-    if cpe_original_id not in cpe_id_to_bron_id:
-        cpe_bron_id = get_unique_id()
-        cpe_node_name = "cpe_" + cpe_bron_id
+    if cpe_original_id not in cpe_id_to_norb_id:
+        cpe_norb_id = get_unique_id()
+        cpe_node_name = "cpe_" + cpe_norb_id
         cpe_meta_dict = parse_cpe(cpe_original_id)
 
         graph.add_node(
@@ -327,10 +327,10 @@ def _add_cpe_node(cpe, graph, cpe_id_to_bron_id, end_point):
             original_id=cpe_original_id,
             metadata=cpe_meta_dict,
         )
-        cpe_id_to_bron_id[cpe_original_id] = cpe_bron_id
+        cpe_id_to_norb_id[cpe_original_id] = cpe_norb_id
     else:
-        cpe_bron_id = cpe_id_to_bron_id[cpe_original_id]
-        cpe_node_name = "cpe_" + cpe_bron_id
+        cpe_norb_id = cpe_id_to_norb_id[cpe_original_id]
+        cpe_node_name = "cpe_" + cpe_norb_id
 
     if not graph.has_edge(end_point, cpe_node_name):
         graph.add_edge(end_point, cpe_node_name)

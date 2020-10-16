@@ -13,8 +13,8 @@ Tactic <--> Technique <--> Attack Pattern <--> Weekness <--> Vulnerability <--> 
 ## Getting Started with Tutorials
 Four tutorials are available in the `tutorials` folder on the following topics:
 - How to download and parse the threat data used for NORB (`download_threat_data_tutorial.ipynb`)
-- How to build NORB and find paths in NORB (`bron_tutorial.ipynb`)
-- How to build the full NORB and find paths in NORB (`full_bron.ipynb`)
+- How to build NORB and find paths in NORB (`norb_tutorial.ipynb`)
+- How to build the full NORB and find paths in NORB (`full_norb.ipynb`)
 - How to perform meta-analyses using NORB (`meta_analysis_tutorial.ipynb`)
 - How to perform extra meta-analyses using NORB (`extra_meta_analysis_tutorial.ipynb`)
 

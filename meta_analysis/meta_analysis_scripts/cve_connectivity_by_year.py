@@ -16,16 +16,16 @@ from typing import List, Dict, Any
 Plot number and percentage of Vulnerabilities connected to a Tactic, Attack Pattern, or Weakness
 """
 
-CVE_ID_NORB_ID_PATH = "NORB/original_id_to_bron_id/cve_id_bron_id.json"
+CVE_ID_NORB_ID_PATH = "NORB/original_id_to_norb_id/cve_id_norb_id.json"
 
 def cves_by_year(years, NORB_folder_path):
     NORB_cve_id_path = os.path.join(NORB_folder_path, CVE_ID_NORB_ID_PATH)
     with open(NORB_cve_id_path) as f:
-        cve_id_bron_id = json.load(f)
+        cve_id_norb_id = json.load(f)
     year_to_cve_ids = dict()
     for year in years:
         year_to_cve_ids[year] = []
-    for cve_id in cve_id_bron_id:
+    for cve_id in cve_id_norb_id:
         cve_year = cve_id.split("-")[1]
         if cve_year in years:
             year_to_cve_ids[cve_year].append(cve_id)

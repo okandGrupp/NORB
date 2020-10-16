@@ -5,7 +5,7 @@ import gzip
 import sys
 from typing import List, Dict, Any
 
-from utils.bron_network_utils import load_graph_nodes
+from utils.norb_network_utils import load_graph_nodes
 
 def load_graph_network(graph_file):
     graph_nodes, G, graph = load_graph_nodes(graph_file)

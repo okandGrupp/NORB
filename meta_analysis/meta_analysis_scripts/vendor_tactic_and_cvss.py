@@ -14,7 +14,7 @@ from ast import literal_eval
 Plot heatmap or violinplot of tactics and vendors
 """
 
-CPE_ID_NORB_ID_PATH = "NORB/original_id_to_bron_id/cpe_id_bron_id.json"
+CPE_ID_NORB_ID_PATH = "NORB/original_id_to_norb_id/cpe_id_norb_id.json"
 
 def make_intensity_array(tactics, vendors, tactic_ids, tactic_vendor_products):
     intensity_array = np.zeros((len(vendors),len(tactics)))
@@ -26,17 +26,17 @@ def make_intensity_array(tactics, vendors, tactic_ids, tactic_vendor_products):
     return intensity_array
 
 
-def bron_id_to_cpe_id(NORB_folder_path):
+def norb_id_to_cpe_id(NORB_folder_path):
     NORB_cpe_id_path = os.path.join(NORB_folder_path, CPE_ID_NORB_ID_PATH)
     with open(NORB_cpe_id_path) as f:
-        cpe_id_bron_id = json.load(f)
-    bron_id_to_cpe_id = dict()
-    for cpe_id, bron_id in cpe_id_bron_id.items():
-        bron_id_to_cpe_id[f"cpe_{bron_id}"] = cpe_id
-    return bron_id_to_cpe_id
+        cpe_id_norb_id = json.load(f)
+    norb_id_to_cpe_id = dict()
+    for cpe_id, norb_id in cpe_id_norb_id.items():
+        norb_id_to_cpe_id[f"cpe_{norb_id}"] = cpe_id
+    return norb_id_to_cpe_id
 
 
-def analyze_tactic_result(vendors, tactic_result, bron_id_to_cpe_id):
+def analyze_tactic_result(vendors, tactic_result, norb_id_to_cpe_id):
     df = pd.read_csv(tactic_result, usecols=["tactic", "cpe"])
     tactic_vendor_products = dict()
     for row_index in df.index[:-1]:
@@ -45,7 +45,7 @@ def analyze_tactic_result(vendors, tactic_result, bron_id_to_cpe_id):
         entry = df["cpe"][row_index]
         if entry != "set()":
             cpes = literal_eval(entry)
-        cpe_ids = find_cpe_ids(cpes, bron_id_to_cpe_id)
+        cpe_ids = find_cpe_ids(cpes, norb_id_to_cpe_id)
         vendor_products = find_vendor_cpes(vendors, cpe_ids)
         tactic_vendor_products[tactic] = vendor_products
     return tactic_vendor_products
@@ -64,18 +64,18 @@ def find_vendor_cpes(vendors, cpe_ids):
     return vendor_products
 
 
-def find_cpe_ids(cpes, bron_id_to_cpe_id):
+def find_cpe_ids(cpes, norb_id_to_cpe_id):
     cpe_ids = set()
-    for bron_id in cpes:
-        cpe_ids.add(bron_id_to_cpe_id[bron_id])
+    for norb_id in cpes:
+        cpe_ids.add(norb_id_to_cpe_id[norb_id])
     return cpe_ids
 
 
-def make_heat_map(tactics, vendors, tactic_ids, tactic_search_result, bron_id_to_cpe_id, save_path=None):
+def make_heat_map(tactics, vendors, tactic_ids, tactic_search_result, norb_id_to_cpe_id, save_path=None):
     plt.rc('font', size=12)
     plt.rcParams["font.weight"] = "bold"
     plt.rcParams["axes.labelweight"] = "bold"
-    tactic_vendor_products = analyze_tactic_result(vendors, tactic_search_result, bron_id_to_cpe_id)
+    tactic_vendor_products = analyze_tactic_result(vendors, tactic_search_result, norb_id_to_cpe_id)
     intensity_array = make_intensity_array(tactics, vendors, tactic_ids, tactic_vendor_products)
     labels = np.asarray([[int(intensity_array[row, col]) for col in range(len(tactics))] for row in range(len(vendors))])
     comma_fmt = FuncFormatter(lambda x, p: format(int(x), ','))
@@ -112,8 +112,8 @@ def cve_to_risk(cve_summary):
 
 # Violin plots for vendor applications that reach a specific tactic
 def max_cve_risk_violin_tactic_helper(tactic, vendors, vendor_search_result_folder, cve_to_risk_dict,
-                                      tactic_search_result, bron_id_to_cpe_id):
-    tactic_vendor_products = analyze_tactic_result(vendors, tactic_search_result, bron_id_to_cpe_id)
+                                      tactic_search_result, norb_id_to_cpe_id):
+    tactic_vendor_products = analyze_tactic_result(vendors, tactic_search_result, norb_id_to_cpe_id)
     vendor_products = tactic_vendor_products[tactic] # dict of vendors to set of their products
     vendor_to_risk_score = dict()
     for vendor in vendors:
@@ -143,7 +143,7 @@ def max_cve_risk_violin_tactic_helper(tactic, vendors, vendor_search_result_fold
 
 
 def max_cve_risk_violin_tactic(tactic_names, tactic_ids, vendors, vendor_search_result_folder,
-                               cve_to_risk_dict, tactic_search_result, bron_id_to_cpe_id, save_path=None, stick=False):
+                               cve_to_risk_dict, tactic_search_result, norb_id_to_cpe_id, save_path=None, stick=False):
     tactic1_name, tactic2_name = tactic_names
     tactic1_id, tactic2_id = tactic_ids
     plt.rcParams['figure.figsize'] = (20.0, 12.0)
@@ -152,9 +152,9 @@ def max_cve_risk_violin_tactic(tactic_names, tactic_ids, vendors, vendor_search_
     sns.set(font_scale=3)
     sns.set_style("ticks")
     vendor_to_risk_score_dict1 = max_cve_risk_violin_tactic_helper(tactic1_id, vendors, vendor_search_result_folder,
-                                                                   cve_to_risk_dict, tactic_search_result, bron_id_to_cpe_id)
+                                                                   cve_to_risk_dict, tactic_search_result, norb_id_to_cpe_id)
     vendor_to_risk_score_dict2 = max_cve_risk_violin_tactic_helper(tactic2_id, vendors, vendor_search_result_folder,
-                                                                   cve_to_risk_dict, tactic_search_result, bron_id_to_cpe_id)
+                                                                   cve_to_risk_dict, tactic_search_result, norb_id_to_cpe_id)
     combined_data = {'Tactic': [], 'Vendor': [], 'CVSS Scores': []}
     for vendor, risk_score_list in vendor_to_risk_score_dict1.items():
         for risk_score in risk_score_list:
@@ -262,7 +262,7 @@ def main(**args: Dict[str, Any]) -> None:
     tactics, vendors, tactic_search_result_file, vendor_search_result_folder, plot_type, violin_stick, cve_summary_path, NORB_folder_path, save_path = args.values()
     tactics_split = tactics.split(',')
     vendors_split = vendors.split(',')
-    bron_id_to_cpe_id_dict = bron_id_to_cpe_id(NORB_folder_path)
+    norb_id_to_cpe_id_dict = norb_id_to_cpe_id(NORB_folder_path)
     cve_to_risk_dict = cve_to_risk(cve_summary_path)
     all_tactics_name_to_id = {"persistence": "tactic_00008", "privilege-escalation": "tactic_00021",
                               "discovery": "tactic_00014", "initial-access": "tactic_00089",
@@ -274,14 +274,14 @@ def main(**args: Dict[str, Any]) -> None:
         tactic_ids = []
         for tactic in tactics_split:
             tactic_ids.append(all_tactics_name_to_id[tactic])
-        make_heat_map(tactics_split, vendors_split, tactic_ids, tactic_search_result_file, bron_id_to_cpe_id_dict, save_path=save_path)
+        make_heat_map(tactics_split, vendors_split, tactic_ids, tactic_search_result_file, norb_id_to_cpe_id_dict, save_path=save_path)
     elif plot_type == 'violinplot':
         max_cve_risk_violin(vendors_split, vendor_search_result_folder, cve_to_risk_dict, save_path=save_path, stick=violin_stick)
     elif plot_type == 'two-tactic-violinplot':
         if len(tactics_split) == 2:
             tactic_ids = [all_tactics_name_to_id[tactics_split[0]], all_tactics_name_to_id[tactics_split[1]]]
             max_cve_risk_violin_tactic(tactics_split, tactic_ids, vendors_split, vendor_search_result_folder, cve_to_risk_dict,
-                                       tactic_search_result_file, bron_id_to_cpe_id_dict, save_path=save_path, stick=violin_stick)
+                                       tactic_search_result_file, norb_id_to_cpe_id_dict, save_path=save_path, stick=violin_stick)
         else:
             print("Error: There must be exactly 2 Tactics")
 

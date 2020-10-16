@@ -6,7 +6,7 @@ import gzip
 import sys
 from typing import List, Dict, Any
 
-from utils.bron_network_utils import load_graph_nodes
+from utils.norb_network_utils import load_graph_nodes
 
 """
 Create CSV files for specific data types with summarizing information

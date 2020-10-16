@@ -25,7 +25,7 @@ THREAT_DATA_TYPES = {
     'CWE': 'raw_CWE.zip',
     'CVE': 'raw_CVE.json.gz',
 }
-NORB_META_DATA_PATH = 'bron_meta_data.json'
+NORB_META_DATA_PATH = 'norb_meta_data.json'
 
 
 def _write_meta_data(threat_data_type: str, file_path: str) -> None:

@@ -21,9 +21,9 @@ def _set_position(
         positions[node] = _pos[_i]
 
 
-def draw_bron(bron_file_path: str, graph_name: str, output_path: str = ".") -> None:
+def draw_norb(norb_file_path: str, graph_name: str, output_path: str = ".") -> None:
     # Load data
-    bron_graph = load_graph_network(bron_file_path)
+    norb_graph = load_graph_network(norb_file_path)
 
     # Get the node types
     node_keys = ("tactic", "technique", "capec", "cwe", "cve", "cpe")
@@ -35,12 +35,12 @@ def draw_bron(bron_file_path: str, graph_name: str, output_path: str = ".") -> N
     _, ax = plt.subplots()
     for i, k in enumerate(node_keys):
         # get node category
-        nodes[k] = _get_node_by_category(bron_graph.nodes, k)
+        nodes[k] = _get_node_by_category(norb_graph.nodes, k)
         # set postions
         _set_position(positions, position_starts[i], nodes[k])
         # draw nodes
         nx.draw_networkx_nodes(
-            bron_graph,
+            norb_graph,
             positions,
             nodelist=nodes[k],
             node_color=colors[i],
@@ -64,10 +64,10 @@ def draw_bron(bron_file_path: str, graph_name: str, output_path: str = ".") -> N
             label_data[node] = _str
 
     # draw edges
-    nx.draw_networkx_edges(bron_graph, positions, alpha=0.5)
+    nx.draw_networkx_edges(norb_graph, positions, alpha=0.5)
     # draw labels
     nx.draw_networkx_labels(
-        bron_graph, positions, label_data, font_size=4, font_type="bold"
+        norb_graph, positions, label_data, font_size=4, font_type="bold"
     )
 
     ax.get_xaxis().set_visible(False)
@@ -75,5 +75,5 @@ def draw_bron(bron_file_path: str, graph_name: str, output_path: str = ".") -> N
     ax.set_xlim(0, 1)
 
     # Save data
-    plot_path = os.path.join(output_path, f"bron_plot_{graph_name}.pdf")
+    plot_path = os.path.join(output_path, f"norb_plot_{graph_name}.pdf")
     plt.savefig(plot_path)

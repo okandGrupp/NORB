@@ -15,7 +15,7 @@ from ast import literal_eval
 Plot number of data types for specific vendor product over all product versions
 """
 
-CPE_ID_NORB_ID_PATH = "NORB/original_id_to_bron_id/cpe_id_bron_id.json"
+CPE_ID_NORB_ID_PATH = "NORB/original_id_to_norb_id/cpe_id_norb_id.json"
 
 def sort_versions(versions):
     i = 0
@@ -54,23 +54,23 @@ def vendor_product_versions(NORB_path, vendor, product):
     return versions
 
 
-def version_to_cpe_ids(NORB_folder_path, vendor, product, starting_point_file, cpe_id_bron_id): # sorted versions
+def version_to_cpe_ids(NORB_folder_path, vendor, product, starting_point_file, cpe_id_norb_id): # sorted versions
     """
     Return list of 'cpe_' IDs, save starting points
     """
     NORB_path = os.path.join(NORB_folder_path, "NORB.json")
     versions = vendor_product_versions(NORB_path, vendor, product)
-    NORB_cpe_id_path = os.path.join(NORB_folder_path, cpe_id_bron_id)
+    NORB_cpe_id_path = os.path.join(NORB_folder_path, cpe_id_norb_id)
     with open(NORB_cpe_id_path) as f:
-        cpe_id_bron_id = json.load(f)
+        cpe_id_norb_id = json.load(f)
     cpe_ids = []
     id_to_version = dict()
     for version in versions:
         found = False
-        for cpe_id in cpe_id_bron_id:
+        for cpe_id in cpe_id_norb_id:
             if f"{vendor}:{product}:{version}" in cpe_id:
                 cpe_ids.append(cpe_id)
-                id_to_version[f"cpe_{cpe_id_bron_id[cpe_id]}"] = version
+                id_to_version[f"cpe_{cpe_id_norb_id[cpe_id]}"] = version
                 found = True
             if found:
                 break
