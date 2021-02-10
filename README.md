@@ -2,7 +2,7 @@
 
 Threat data from [MITRE ATT&CK](https://attack.mitre.org/), [CAPEC](https://capec.mitre.org/), [CWE](https://cwe.mitre.org/) and [CVE](https://nvd.nist.gov) data sources are linked together in a graph called NORB. The data types are linked with bidirectional edges in the following manner:
 ```
-Tactic <--> Technique <--> Attack Pattern <--> Weekness <--> Vulnerability <--> Affected Product Configuration
+Tactic <--> Technique <--> Attack Pattern <--> Weakness <--> Vulnerability <--> Affected Product Configuration
 ```
 
 ## Installation
@@ -45,4 +45,19 @@ There are 4 attributes for each node:
 - Datatype: One of Tactic, Technique, CAPEC, CWE, CVE, or CPE
 - Name: Name of threat data in MITRE/NIST if it exists
 - Metadata: Any additional information that is contained in MITRE/NIST
+
+## Bibliography
+
+arXiv report: [https://arxiv.org/abs/2010.00533](https://arxiv.org/abs/2010.00533)
+
+```
+@misc{hemberg2020norb,
+      title={NORB -- Linking Attack Tactics, Techniques, and Patterns with Defensive Weaknesses, Vulnerabilities and Affected Platform Configurations}, 
+      author={Erik Hemberg and Jonathan Kelly and Michal Shlapentokh-Rothman and Bryn Reinstadler and Katherine Xu and Nick Rutar and Una-May O'Reilly},
+      year={2020},
+      eprint={2010.00533},
+      archivePrefix={arXiv},
+      primaryClass={cs.CR}
+}
+```
 
