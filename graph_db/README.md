@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Build NORB, so there exists a `BORN.json` file
+- Build NORB, so there exists a `NORB.json` file
 
 - Install ArangoDB https://www.arangodb.com/download-major/
 
